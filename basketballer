@@ -1,0 +1,46 @@
+-- Configuration
+local config = {
+    Time = 0.045,  -- Tween time
+    Size = 0.9     -- Target size scale (0.9 means 90% of original size)
+}
+
+-- Services and Variables
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Player = game:GetService("Players").LocalPlayer
+local Bar = Player.PlayerGui.Visual.Shooting.Bar
+local connection = nil  -- Initialize connection variable
+
+-- Function to handle the resizing and tweening of the bar
+local function ResizeBar()
+    -- Ensure the Basketball exists in the character
+    if Player.Character and Player.Character:FindFirstChild("Basketball") then
+        connection = Bar:GetPropertyChangedSignal("Size"):Connect(function()
+            if Bar.Size.Y.Scale > config.Size then
+                -- Perform tween animation
+                local tweenInfo = TweenInfo.new(config.Time, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+                local tween = TweenService:Create(Bar, tweenInfo, { Size = UDim2.new(1, 0, 1, 0) })
+                tween:Play()
+                tween.Completed:Wait()  -- Wait for tween to complete
+                Bar.Size = UDim2.new(1, 0, 1, 0)  -- Ensure final size
+            end
+        end)
+    end
+end
+
+-- Input handling
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end  -- Ignore game processed events
+
+    if input.KeyCode == Enum.KeyCode.E then
+        ResizeBar()
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.E then
+        if connection then
+            connection:Disconnect()  -- Disconnect the connection if it exists
+        end
+    end
+end)
